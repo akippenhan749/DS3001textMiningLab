@@ -1,0 +1,69 @@
+﻿
+Date and Time: Saturday, October 16, 2021 11:05:00 AM EDT
+Job Number: 155465201
+Document (1)
+1. We can prepare better for hurricanes. Here's how. | Column; Response teams too often view themselves as separate entities rather than crucial cogs in a complicated response program.
+Client/Matter: -None-
+Search Terms: climate
+Search Type: Natural Language 
+Narrowed by: 
+
+Content Type
+Narrowed by
+News
+Subject: Environment & Natural Resources; Timeline: Jan 01, 2020 to Dec 31, 2021; Location by Publication: California,Florida; Sources: Tampa Bay Times
+
+
+We can prepare better for hurricanes. Here's how. | Column; Response teams too often view themselves as separate entities rather than crucial cogs in a complicated response program.
+Tampa Bay Times
+September 30, 2021 Thursday
+
+
+Copyright 2021 Times Publishing Company All Rights Reserved
+Section: NEWS; Opinion
+Length: 980 words
+Byline: Halit Uster
+Body
+
+
+Hurricane Ida struck the Louisiana coast in August. Fueled by record high ocean temperatures, the storm went from a lowly tropical depression to Category 4 major hurricane in just 74 hours. Because of this rapid intensification, New Orleans was unable to issue a mandatory evacuation due to a lack of time and preparation, putting many residents in harm's way.
+This is just one example - with tragic consequences - of climate change's wrath being felt across the globe, from prolonged droughts and stronger hurricanes to uncontainable wildfires and blistering heat waves. With natural disasters becoming not only more frequent, but also more widespread and stronger, effective emergency response is more imperative than ever. Operations research and advance analytics are the answer to how we can ensure natural disasters are met with the best response to save lives, property and ensure nobody is left behind.
+Shortly after Ida's landfall, President Joe Biden spoke to Louisiana elected officials and said, "The most important element though is coordinating all the branches of government, state, local and federal." The president is correct, and years of data science research supports this conclusion on the importance of coordination and communication well before, during and after a natural disaster. Without this, stakeholders can incorrectly plan a response and leave tens of thousands of people at further risk during the crisis.
+National Science Foundation (NSF) supported research through Southern Methodist University that profiles preparedness logistics networks for large-scale foreseen disasters yielded many important conclusions. First, the research concluded that oftentimes leadership and other response teams view themselves as separate entities rather than crucial cogs in a complicated response program. Without proper communication, planning, coordination and the right mindset, a hurricane response can fail.
+So, who are the groups who must prioritize these factors? They are: (1) Officials who are evacuation timing decision makers; (2) evacuees who need to move out of harm's way safely; (3) officials who manage the evacuation process and support or guide the evacuees and (4) officials who are coordinating relief supply logistics.
+These groups often fail to proactively communicate with one another and instead communicate during disasters when it's too late, like in New Orleans when officials were caught off guard by the storm's speed, projected intensity and direct path. This can harm storm mitigation efforts, slow down the streamlining of evacuations and hinder available space upon evacuation, all factors which can cost human lives and/or confuse residents on the most pertinent information to follow.
+Researching Hurricanes Harvey and Irma in 2017, as well as earlier ones, such as Katrina and Rita in 2005, also showed coordination during a hurricane created significant shortcomings in existing response plans - and led to a major, unnecessary loss of life. As a result, the research found a second flaw to be conflicting motivations of stakeholders, especially the officials who manage evacuation decisions and the officials who manage relief supply decisions, which can lead to decisions driven by individual objectives rather than what is best under a system view. Thus, impacted regions are faced with unintended consequences including slowed response times and poorly targeted areas, as well as inadequate communication about evacuation instructions and how to seek resources.
+A simpler way of thinking about emergency response is as a system with supply and demand. Governments largely overlook the important interdependence between evacuation (demand) and relief (supply), missing significant potential for integrating efficiency and effectiveness in preparedness and response planning. This was explicitly true during Hurricane Katrina, and yet also true during Hurricanes Harvey and Irma more than a decade later.
+There are also several best practices for hurricane and other disaster relief that officials should prioritize. This includes careful infrastructure development, strategic decision making and coordination of planning and management efforts. This is especially true when it comes to the great uncertainties that come from hurricanes. These include unpredictable supply planning through evacuation decision-making and evacuee behavior, both presenting a major challenge in optimization when employing an integrated systems framework. This is a critical gap in theory and practice, which officials must acknowledge and confront head-on.
+Put simply: stakeholders, jurisdictions, governments and aid groups need to coordinate and communicate before, during and after a disaster. They should not waituntil the disaster is in progress, nor should they act as solitary units. Otherwise, the national will see another failed emergency response like Hurricane Katrina.
+While lessons learned from Ida are still being determined, disasters, like hurricanes and wildfires, are more intense, fast moving, and ominous. This said, emergency officials from all levels of government and roles must prioritize coordination plans and communication strategies proactively. By collectively capturing stakeholder activities as a system throughout a disaster, rather than planning actions independently, you will improve efficiency and cost-effectiveness at the system level, all while saving human lives.
+Halit Uster is a professor of operations research and engineering management at Southern Methodist University. His research areas include transportation and logistics, network design, decomposition methods for optimization, stochastic optimization, and applied and computational optimization with applications in hurricane emergency response. He is also a member of INFORMS, the leading association for Operations Research and Analytics Professionals.
+
+Graphic
+
+ 
+See image link
+A damaged oyster boat sits amongst destruction along Bayou Pointe au Chien in the aftermath of Hurricane Ida in Pointe-aux-Chenes, La., Tuesday, Sept. 14, 2021. (AP Photo/Gerald Herbert)
+See image link
+Halit Uster
+Classification
+
+
+Language: ENGLISH
+
+Publication-Type: Newspaper
+
+Subject: NATURAL DISASTERS (92%); HURRICANES (91%); SAFETY, ACCIDENTS & DISASTERS (91%); EXTREME TEMPERATURES (90%); NEGATIVE NEWS (90%); TROPICAL STORMS (90%); WEATHER (90%); CLIMATOLOGY (79%); HURRICANE IRMA (79%); HURRICANE KATRINA (79%); HEAT WAVES (78%); ENVIRONMENTAL ACCIDENTS & DISASTERS (75%); EXPERIMENTATION & RESEARCH (74%); FIRES (73%); GOVERNMENT & PUBLIC ADMINISTRATION (73%); PUBLIC OFFICIALS (73%); WILDFIRES (72%); SCIENCE & TECHNOLOGY (69%); US PRESIDENTIAL CANDIDATES 2016 (68%); US PRESIDENTIAL CANDIDATES 2020 (68%)
+
+Organization: SOUTHERN METHODIST UNIVERSITY (54%); NATIONAL SCIENCE FOUNDATION (54%)
+
+Industry: DATA ANALYTICS (78%); PUBLISHING (73%)
+
+Person: JOE BIDEN (72%)
+
+Geographic: NEW ORLEANS, LA, USA (92%); TAMPA, FL, USA (92%); LOUISIANA, USA (93%)
+
+Load-Date: October 1, 2021
+
+
+End of Document
