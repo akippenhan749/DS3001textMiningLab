@@ -1,0 +1,492 @@
+---
+title: "South&West Regions"
+author: "Declan Young"
+date: "10/16/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, cache = TRUE, error = FALSE, message = FALSE)
+```
+
+
+
+```{r, include = FALSE}
+library(tidyverse)
+library(tidytext)
+library(ggwordcloud)
+library(gutenbergr)
+library(textdata)
+```
+
+
+```{r, include=FALSE}
+#Reading in text data for South and West regions and subsetting to only include the body of the article 
+setwd("~/DS 3001/DS3001textMiningLab")
+S1 <- read_lines("data/SouthRegion/South1.txt")
+S1 <- tibble(S1)
+S1 = S1[29:53,]
+S1$S1 = as.character(S1$S1)
+
+S2 <- read_lines("data/SouthRegion/South2.txt")
+S2 <- tibble(S2)
+S2 = S2[29:51,]
+S2$S2 = as.character(S2$S2)
+
+S3 <- read_lines("data/SouthRegion/South3.txt")
+S3 <- tibble(S3)
+S3 = S3[29:36,]
+S3$S3 = as.character(S3$S3)
+
+S4 <- read_lines("data/SouthRegion/South4.txt")
+S4 <- tibble(S4)
+S4 = S4[29:41,]
+S4$S4 = as.character(S4$S4)
+
+S5 <- read_lines("data/SouthRegion/South5.txt")
+S5 <- tibble(S5)
+S5 = S5[29:46,]
+S5$S5 = as.character(S5$S5)
+
+S6 <- read_lines("data/SouthRegion/South6.txt")
+S6 <- tibble(S6)
+S6 = S6[29:40,]
+S6$S6 = as.character(S6$S6)
+
+S7 <- read_lines("data/SouthRegion/South7.txt")
+S7 <- tibble(S7)
+S7 = S7[29:32,]
+S7$S7 = as.character(S7$S7)
+
+S8 <- read_lines("data/SouthRegion/South8.txt")
+S8 <- tibble(S8)
+S8 = S8[29:35,]
+S8$S8 = as.character(S8$S8)
+
+S9 <- read_lines("data/SouthRegion/South9.txt")
+S9 <- tibble(S9)
+S9 = S9[29:65,]
+S9$S9 = as.character(S9$S9)
+
+S10 <- read_lines("data/SouthRegion/South10.txt")
+S10 <- tibble(S10)
+S10 = S10[29:47,]
+S10$S10 = as.character(S10$S10)
+
+W1 <- read_lines("data/WestRegion/West1.txt")
+W1 <- tibble(W1)
+W1 = W1[30:43,]
+
+W2 <- read_lines("data/WestRegion/West2.txt")
+W2 <- tibble(W2)
+W2 = W2[30:71,]
+
+W3 <- read_lines("data/WestRegion/West3.txt")
+W3 <- tibble(W3)
+W3 = W3[30:54,]
+
+W4 <- read_lines("data/WestRegion/West4.txt")
+W4 <- tibble(W4)
+W4 = W4[30:44,]
+
+W5 <- read_lines("data/WestRegion/West5.txt")
+W5 <- tibble(W5)
+W5 = W5[30:70,]
+
+W6 <- read_lines("data/WestRegion/West6.txt")
+W6 <- tibble(W6)
+W6 = W6[30:63,]
+
+W7 <- read_lines("data/WestRegion/West7.txt")
+W7 <- tibble(W7)
+W7 = W7[30:42,]
+
+W8 <- read_lines("data/WestRegion/West8.txt")
+W8 <- tibble(W8)
+W8 = W8[31:52,]
+
+W9 <- read_lines("data/WestRegion/West9.txt")
+W9 <- tibble(W9)
+W9 = W9[30:50,]
+
+W10 <- read_lines("data/WestRegion/West10.txt")
+W10 <- tibble(W10)
+W10 = W10[30:41,]
+
+#Combining dataframes into region specific lists
+South = list(S1,S2,S3,S4,S5,S6,S7,S8,S9,S10)
+West = list(W1,W2,W3,W4,W5,W6,W7,W8,W9,W10)
+
+#Making a function to tokenize the documents and identify the word frequency
+token = function(x){
+  y = names(x)
+  x = unnest_tokens(x, word, y)
+  x = tibble(x[2]) 
+  x = x %>%
+  anti_join(stop_words)%>%
+  count(word, sort=TRUE)
+  name = paste("Token",y,sep = '')
+  assign(name, data.frame(x))
+}
+
+#Making a function to add the afinn sentiment analysis to the word frequency
+afinn = function(x){
+  x = x %>%
+  inner_join(get_sentiments("afinn"))
+  assign("afinn", x)
+}
+
+#Making a function to visualize the word frequency in a word cloud
+visualize = function(x){
+  set.seed(3001)
+  name = paste("WC", names(x), sep = "")
+  assign(name,  ggplot(x[1:50,], aes(label = word, size = n)
+       ) +
+  geom_text_wordcloud_area(area_corr_power = 1) +
+  scale_size_area(max_size = 16)+
+  theme_minimal())
+}
+
+#Making a function that maps the wordcloud to a colored sentiment gradient
+viz_afinn = function(x){
+  set.seed(3001)
+  name = paste("WC", names(x), sep = "")
+  names(x)[2] = "n" 
+  assign(name,  ggplot(x[1:50,], aes(label = word, size = n, color = value)
+       ) +
+  geom_text_wordcloud_area(area_corr_power = 1) +
+  scale_size_area(max_size = 16)+
+  scale_color_gradient(low = "red", high = "green")+
+  theme_minimal())
+}
+
+#Tokenizing South and West region articles
+S_Tokens = lapply(South, token)
+W_Tokens = lapply(West, token)
+
+#Using functions I made earlier on the South data
+South_afinn = lapply(S_Tokens, afinn)
+S_WordCloud = lapply(S_Tokens, visualize)
+S_ColorWord = lapply(South_afinn, viz_afinn)
+
+#Same for West Data
+West_afinn = lapply(W_Tokens, afinn)
+W_WordCloud = lapply(W_Tokens, visualize)
+W_ColorWord = lapply(West_afinn, viz_afinn)
+
+#Uniting all of the text into one cell
+data_prep <- function(x){
+  i <- as_tibble(t(x))
+  ii <- unite(i,"text",remove = TRUE,sep = "")
+}
+
+S_United = lapply(South, data_prep) 
+W_United = lapply(West, data_prep)
+
+#Binding the dataframes within our lists together
+S_United = bind_rows(S_United)
+S_FullToken = S_United %>% unnest_tokens(word, text) %>%
+  anti_join(stop_words)%>%
+  count(word, sort = TRUE)
+
+S_FullCloud = visualize(S_FullToken)
+S_FullAfinn = afinn(S_FullToken)
+S_FullAfinn = viz_afinn(S_FullAfinn)
+
+W_United = bind_rows(W_United)
+W_FullToken = W_United %>% unnest_tokens(word, text) %>%
+  anti_join(stop_words)%>%
+  count(word, sort = TRUE)
+
+W_FullCloud = visualize(W_FullToken)
+W_FullAfinn = afinn(W_FullToken)
+W_FullAfinn = viz_afinn(W_FullAfinn)
+#Term frequency analysis
+
+#Matching the name of the article with its text in the corpus
+South_Names = data.frame(name = c("S1","S2","S3","S4","S5","S6","S7","S8","S9","S10"))
+S_tf = cbind.data.frame(South_Names, S_United)
+
+West_Names = data.frame(name = c("W1","W2","W3","W4","W5","W6","W7","W8","W9","W10"))
+W_tf = cbind.data.frame(West_Names, W_United)
+
+#Counting the number of times a word occurs per article
+S_word_count = S_tf %>%
+  unnest_tokens(word, text) %>%
+  count(name, word, sort = TRUE)
+
+W_word_count = W_tf %>%
+  unnest_tokens(word, text) %>%
+  count(name, word, sort = TRUE)
+
+#Finding the total number of words in each article
+S_total_words = S_word_count %>% 
+  group_by(name) %>% 
+  summarize(total = sum(n))
+
+S_Words = left_join(S_word_count, S_total_words)
+
+S_tf_idf = S_Words %>%
+  bind_tf_idf(word, name, n) %>%
+  arrange(desc(tf_idf))
+
+W_total_words = W_word_count %>% 
+  group_by(name) %>% 
+  summarize(total = sum(n))
+
+W_Words = left_join(W_word_count, W_total_words)
+
+W_tf_idf = W_Words %>%
+  bind_tf_idf(word, name, n) %>%
+  arrange(desc(tf_idf))
+
+
+```
+
+## Text Analysis of Newspaper Articles in Various US Regions {.tabset}
+
+For each article, I displayed a wordcloud of the different unique terms in it, and it scales the size of the word based on the word's frequency. Below that is a wordcloud color coded for sentiment analysis (green indicates positive sentiment and red indicates negative sentiment).
+
+
+### South {.tabset}
+
+#### 1st South Article
+
+```{r}
+S_WordCloud[[1]]
+```
+
+
+```{r}
+S_ColorWord[[1]]
+```
+
+
+#### 2nd South Article
+
+```{r}
+S_WordCloud[[2]]
+```
+
+
+```{r}
+S_ColorWord[[2]]
+```
+
+#### 3rd South Article
+
+```{r}
+S_WordCloud[[3]]
+```
+
+
+```{r}
+S_ColorWord[[3]]
+```
+
+#### 4th South Article
+
+```{r}
+S_WordCloud[[4]]
+```
+
+
+```{r}
+S_ColorWord[[4]]
+```
+
+#### 5th South Article
+
+```{r}
+S_WordCloud[[5]]
+```
+
+
+```{r}
+S_ColorWord[[5]]
+```
+
+#### 6th South Article
+
+```{r}
+S_WordCloud[[6]]
+```
+
+
+```{r}
+S_ColorWord[[6]]
+```
+
+#### 7th South Article
+
+```{r}
+S_WordCloud[[7]]
+```
+
+
+```{r}
+S_ColorWord[[7]]
+```
+
+#### 8th South Article
+
+```{r}
+S_WordCloud[[8]]
+```
+
+
+```{r}
+S_ColorWord[[8]]
+```
+
+#### 9th South Article
+
+```{r}
+S_WordCloud[[9]]
+```
+
+
+```{r}
+S_ColorWord[[9]]
+```
+
+#### 10th South Article
+
+```{r}
+S_WordCloud[[10]]
+```
+
+
+```{r}
+S_ColorWord[[10]]
+```
+
+### South DataTable
+
+DataTable of Term Frequency (tf) in South Newspapers and their respective Inverse Document Frequencies (idf)
+
+```{r}
+DT::datatable(S_tf_idf)
+```
+
+### West {.tabset}
+
+#### 1st West Article
+
+```{r}
+W_WordCloud[[1]]
+```
+
+
+```{r}
+W_ColorWord[[1]]
+```
+
+
+#### 2nd West Article
+
+```{r}
+W_WordCloud[[2]]
+```
+
+
+```{r}
+W_ColorWord[[2]]
+```
+
+#### 3rd West Article
+
+```{r}
+W_WordCloud[[3]]
+```
+
+
+```{r}
+W_ColorWord[[3]]
+```
+
+#### 4th West Article
+
+```{r}
+W_WordCloud[[4]]
+```
+
+
+```{r}
+W_ColorWord[[4]]
+```
+
+#### 5th West Article
+
+```{r}
+W_WordCloud[[5]]
+```
+
+
+```{r}
+W_ColorWord[[5]]
+```
+
+#### 6th West Article
+
+```{r}
+W_WordCloud[[6]]
+```
+
+
+```{r}
+W_ColorWord[[6]]
+```
+
+#### 7th West Article
+
+```{r}
+W_WordCloud[[7]]
+```
+
+
+```{r}
+W_ColorWord[[7]]
+```
+
+#### 8th West Article
+
+```{r}
+W_WordCloud[[8]]
+```
+
+
+```{r}
+W_ColorWord[[8]]
+```
+
+#### 9th West Article
+
+```{r}
+W_WordCloud[[9]]
+```
+
+
+```{r}
+W_ColorWord[[9]]
+```
+
+#### 10th West Article
+
+```{r}
+W_WordCloud[[10]]
+```
+
+
+```{r}
+W_ColorWord[[10]]
+```
+
+### West DataTable
+
+DataTable of Term Frequency (tf) in West Newspapers and their respective Inverse Document Frequencies (idf)
+
+```{r}
+DT::datatable(W_tf_idf)
+```
+
