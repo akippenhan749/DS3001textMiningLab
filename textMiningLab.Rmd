@@ -558,7 +558,7 @@ TheBismarckTribuneWords$articleTitle <- substr(TheBismarckTribuneWords$articleTi
 datatable(TheBismarckTribuneWords) # display table containing tf, idf and tf_idf values
 ```
 
-# Analysis
+# Analysis of Northeast and Midwest Regions (Adam)
 
 For all 100 articles used for the Northwest and Midwest regions, I combined each article from the five publications from each region into a corpus. To do this, I created a function that would read a pdf file between the words 'Body' and 'Classification' as this is the format each article was downloaded in from the Nexas Uni website. I used `lapply` to apply this function to each file in the directory for each publication, creating a table for each publication where each row is the text of every article. I then ran sentiment analysis on these and displayed the AFINN word positivity values for each news publication. To calculate the term frequency and inverse document frequency, I used the table I described above with the text for each publication, calculated the word count for every word in each article, calculated the total words in each article and added the term frequency and inverse document frequency by using the `bind_tf_idf` function. According to the analysis done here, I have found that the sentiment for most of the publications was relatively neutral, with words being classified mostly evenly between positive and negative values. Additionally, some of the most commonly occurring words in each article and 'climate' and 'change'. Both of these things are likely due to the method of finding the articles and could be made less of an issue with a more sophisticated article search procedure. As next steps, I would recommend a more in-detail search for articles, being sure to control for frequently-occurring words and cover as wide a sentiment range as possible. This could lead to being able to conduct a more meaningful analysis of climate change sentiment throughout the country.
 
@@ -701,6 +701,15 @@ viz_afinn = function(x){
   theme_minimal())
 }
 
+#Making a function for afinn histograms
+histo_afinn = function(x) {
+  ggplot(data = x,
+       aes(x=value)) +
+       geom_histogram()+
+       ggtitle('Histogram of Afinn values') +
+       theme_minimal()
+}
+
 #Tokenizing South and West region articles
 S_Tokens = lapply(South, token)
 W_Tokens = lapply(West, token)
@@ -732,7 +741,7 @@ S_FullToken = S_United %>% unnest_tokens(word, text) %>%
 
 S_FullCloud = visualize(S_FullToken)
 S_FullAfinn = afinn(S_FullToken)
-S_FullAfinn = viz_afinn(S_FullAfinn)
+S_FullAfinnC = viz_afinn(S_FullAfinn)
 
 W_United = bind_rows(W_United)
 W_FullToken = W_United %>% unnest_tokens(word, text) %>%
@@ -741,7 +750,13 @@ W_FullToken = W_United %>% unnest_tokens(word, text) %>%
 
 W_FullCloud = visualize(W_FullToken)
 W_FullAfinn = afinn(W_FullToken)
-W_FullAfinn = viz_afinn(W_FullAfinn)
+W_FullAfinnC = viz_afinn(W_FullAfinn)
+
+# make ggplot to plot counts of afinn positivity values
+S_hist_afinn = lapply(South_afinn, histo_afinn)
+W_hist_afinn = lapply(West_afinn, histo_afinn)
+  
+  
 #Term frequency analysis
 
 #Matching the name of the article with its text in the corpus
@@ -799,16 +814,25 @@ S_WordCloud[[1]]
 
 
 ```{r}
+S_hist_afinn[[1]]
+```
+
+
+```{r}
 S_ColorWord[[1]]
 ```
 
 
 #### 2nd South Article
 
+
 ```{r}
 S_WordCloud[[2]]
 ```
 
+```{r}
+S_hist_afinn[[2]]
+```
 
 ```{r}
 S_ColorWord[[2]]
@@ -820,6 +844,9 @@ S_ColorWord[[2]]
 S_WordCloud[[3]]
 ```
 
+```{r}
+S_hist_afinn[[3]]
+```
 
 ```{r}
 S_ColorWord[[3]]
@@ -829,6 +856,11 @@ S_ColorWord[[3]]
 
 ```{r}
 S_WordCloud[[4]]
+```
+
+
+```{r}
+S_hist_afinn[[4]]
 ```
 
 
@@ -844,6 +876,11 @@ S_WordCloud[[5]]
 
 
 ```{r}
+S_hist_afinn[[5]]
+```
+
+
+```{r}
 S_ColorWord[[5]]
 ```
 
@@ -851,6 +888,11 @@ S_ColorWord[[5]]
 
 ```{r}
 S_WordCloud[[6]]
+```
+
+
+```{r}
+S_hist_afinn[[6]]
 ```
 
 
@@ -866,6 +908,11 @@ S_WordCloud[[7]]
 
 
 ```{r}
+S_hist_afinn[[7]]
+```
+
+
+```{r}
 S_ColorWord[[7]]
 ```
 
@@ -873,6 +920,11 @@ S_ColorWord[[7]]
 
 ```{r}
 S_WordCloud[[8]]
+```
+
+
+```{r}
+S_hist_afinn[[8]]
 ```
 
 
@@ -888,6 +940,11 @@ S_WordCloud[[9]]
 
 
 ```{r}
+S_hist_afinn[[9]]
+```
+
+
+```{r}
 S_ColorWord[[9]]
 ```
 
@@ -895,6 +952,11 @@ S_ColorWord[[9]]
 
 ```{r}
 S_WordCloud[[10]]
+```
+
+
+```{r}
+S_hist_afinn[[10]]
 ```
 
 
@@ -910,12 +972,30 @@ DataTable of Term Frequency (tf) in South Newspapers and their respective Invers
 DT::datatable(S_tf_idf)
 ```
 
+### South Total Visuals
+
+```{r}
+S_FullCloud
+
+ggplot(data = S_FullAfinn,
+       aes(x=value)) +
+       geom_histogram()+
+       ggtitle('Histogram of Afinn values') +
+       theme_minimal()
+S_FullAfinnC
+```
+
 ### West {.tabset}
 
 #### 1st West Article
 
 ```{r}
 W_WordCloud[[1]]
+```
+
+
+```{r}
+W_hist_afinn[[1]]
 ```
 
 
@@ -932,6 +1012,11 @@ W_WordCloud[[2]]
 
 
 ```{r}
+W_hist_afinn[[2]]
+```
+
+
+```{r}
 W_ColorWord[[2]]
 ```
 
@@ -939,6 +1024,11 @@ W_ColorWord[[2]]
 
 ```{r}
 W_WordCloud[[3]]
+```
+
+
+```{r}
+W_hist_afinn[[3]]
 ```
 
 
@@ -954,6 +1044,11 @@ W_WordCloud[[4]]
 
 
 ```{r}
+W_hist_afinn[[4]]
+```
+
+
+```{r}
 W_ColorWord[[4]]
 ```
 
@@ -961,6 +1056,11 @@ W_ColorWord[[4]]
 
 ```{r}
 W_WordCloud[[5]]
+```
+
+
+```{r}
+W_hist_afinn[[5]]
 ```
 
 
@@ -976,6 +1076,11 @@ W_WordCloud[[6]]
 
 
 ```{r}
+W_hist_afinn[[6]]
+```
+
+
+```{r}
 W_ColorWord[[6]]
 ```
 
@@ -983,6 +1088,11 @@ W_ColorWord[[6]]
 
 ```{r}
 W_WordCloud[[7]]
+```
+
+
+```{r}
+W_hist_afinn[[7]]
 ```
 
 
@@ -998,6 +1108,11 @@ W_WordCloud[[8]]
 
 
 ```{r}
+W_hist_afinn[[8]]
+```
+
+
+```{r}
 W_ColorWord[[8]]
 ```
 
@@ -1005,6 +1120,11 @@ W_ColorWord[[8]]
 
 ```{r}
 W_WordCloud[[9]]
+```
+
+
+```{r}
+W_hist_afinn[[9]]
 ```
 
 
@@ -1020,6 +1140,11 @@ W_WordCloud[[10]]
 
 
 ```{r}
+W_hist_afinn[[10]]
+```
+
+
+```{r}
 W_ColorWord[[10]]
 ```
 
@@ -1030,3 +1155,37 @@ DataTable of Term Frequency (tf) in West Newspapers and their respective Inverse
 ```{r}
 DT::datatable(W_tf_idf)
 ```
+
+### West Total Visuals
+
+```{r}
+W_FullCloud
+
+ggplot(data = W_FullAfinn,
+       aes(x=value)) +
+       geom_histogram()+
+       ggtitle('Histogram of Afinn values') +
+       theme_minimal()
+W_FullAfinnC
+```
+
+
+## Analysis of South and West Regions (Declan)
+
+I combined the 10 articles from the South and West regions into two respective corpora via lists and the "unite" function. I looked at the sentiment analysis for each newspaper, and also compared it to the corpus on the whole. I also used the bind_tf_idf function to create a data table that displayed the tf and idf for terms in the documents. Some articles skewed positive whilst others skewed negative across both regions. All together, the South and the West regions showed similar sentiment levels. However, this should be taken with a grain of salt because the "South" region only encompassed Florida and the "West" region only encompassed California. Both of these states deeply feel the effects of climate change through rising sea levels, intensified storms, and extreme summer temperatures. Therefore, despite their geographical differences, they may still be closely aligned when discussing climate change. It is hard to conclude much from the term frequency analysis because the single words do not mean much without context. "Climate" and "Change", the search terms used to procure the articles, occurred often in the documents. Furthermore, one of the terms with the highest tf_idf for the West region is "coffee", but that does not mean coffee necessarily connects to climate change. The most differentiating textual element is "Hurricane" appears much more often in the South region than in the West because the West does not have to worry about those storms. As for next steps, it would be beneficial to either 
+
+A: Capture more regions
+
+or
+
+B: Include more states in each region
+
+
+This will mitigate the effects of California and Florida's similarities.
+
+
+Also, I believe collecting more articles would strengthen the validity of any insights from this data because 10 articles likely does not capture the general sentiment towards climate change.
+
+# Conclusion
+
+Overall, the regions showed little difference beyond region-specific takeaways (ex: "Irvine" occurred frequently in West publications). This can likely be attributed to the fact that no matter one's stance on climate change events are occurring that are interpreted both positively and negatively. If a region supports green energy, they will laud the development of renewable energy and begrudge when fossil fuels are defended. Someone from the other perspective will view those stories in the opposite way, but because bot occur at what seems to be similar rates, the sentiment analysis for any given region will become balanced. In the future, as discussed earlier, we may want to refine our search term to a more targeted search like "wind turbine development" to see if regions perceive the growth of wind energy in different ways. As long as there are ample articles for this type of search, we believe it could yield more insightful results from the text
