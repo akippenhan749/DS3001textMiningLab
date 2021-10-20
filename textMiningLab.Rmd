@@ -1,10 +1,1192 @@
 ---
-title: "Text Mining Lab"
-author: "Adam Kippenhan and Declan Young"
-date: "October 20, 2021"
+title: 'Analysis of Climate Change Sentiment in the News across the Country'
+author: 'Adam Kippenhan and Declan Young'
+date: 'October 20, 2021'
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+<style>
+h1.title {
+  font-size: 40px;
+}
+h1 {
+  font-size: 32px;
+}
+h2 {
+  font-size: 28px;
+}
+h3 { 
+  font-size: 24px;
+}
+h4.author {
+  font-size: 32px;
+}
+h4.date {
+  font-size: 32px;
+}
+body {
+  font-size: 14px;
+}
+</style>
+
+```{r setup,include=FALSE}
+knitr::opts_chunk$set(echo=FALSE,warning=FALSE,cache=TRUE,error=FALSE,message=FALSE)
 ```
+
+```{r libraries}
+library(DT)
+library(ggwordcloud)
+library(pdftools)
+library(stringr)
+library(textdata)
+library(tidytext)
+library(tidyverse)
+```
+
+# Introduction
+
+Climate change is a hot topic throughout the country and the world. It can be very divisive based on political leanings and various other socioeconomic factors. In this report, we will investigate sentiment on climate change in different regions of the United States by searching through news articles from several publications in different regions of the country.
+
+# Northwest
+
+```{r NorthwestDataRead}
+# function to read all text between 'Body' and 'Classification'
+readInPdf <- function(path,filename) {
+  pdfTxt <- toString(pdf_text(paste(path,filename,sep='')))
+  pdfTxt <- gsub('\n',' ',pdfTxt) # remove '\n' characters
+  return(str_extract_all(pdfTxt,'(?<=Body).+(?=Classification)'))
+}
+
+# Eurasia Review
+EurasiaReview <- lapply(list.files('data/northwestRegion/EurasiaReview/'),readInPdf,path='data/northwestRegion/EurasiaReview/') # use lapply to read all PDFs in directory
+EurasiaReview <- tibble(text=EurasiaReview[1:10]) # create a tibble with the text from each article as a row
+
+EurasiaReview$text <- as.character(EurasiaReview$text) # convert text to character
+
+EurasiaReviewWordCt <- EurasiaReview %>% unnest_tokens(word,text) %>% # make a row for each word
+                                         anti_join(stop_words) %>% # remove stop words
+                                         count(word,sort=TRUE) # count words from text
+
+# The Spokesman Review
+TheSpokesmanReview <- lapply(list.files('data/northwestRegion/TheSpokesmanReview/'),readInPdf,path='data/northwestRegion/TheSpokesmanReview/') # use lapply to read all PDFs in directory
+TheSpokesmanReview <- tibble(text=TheSpokesmanReview[1:10]) # create a tibble with the text from each article as a row
+
+TheSpokesmanReview$text <- as.character(TheSpokesmanReview$text) # convert text to character
+
+TheSpokesmanReviewWordCt <- TheSpokesmanReview %>% unnest_tokens(word,text) %>% # make a row for each word
+                                                   anti_join(stop_words) %>% # remove stop words
+                                                   count(word,sort=TRUE) # count words from text
+
+# The Columbian
+TheColumbian <- lapply(list.files('data/northwestRegion/TheColumbian/'),readInPdf,path='data/northwestRegion/TheColumbian/') # use lapply to read all PDFs in directory
+TheColumbian <- tibble(text=TheColumbian[1:10]) # create a tibble with the text from each article as a row
+
+TheColumbian$text <- as.character(TheColumbian$text) # convert text to character
+
+TheColumbianWordCt <- TheColumbian %>% unnest_tokens(word,text) %>% # make a row for each word
+                                       anti_join(stop_words) %>% # remove stop words
+                                       count(word,sort=TRUE) # count words from text
+
+# The Register Guard
+TheRegisterGuard <- lapply(list.files('data/northwestRegion/TheRegisterGuard/'),readInPdf,path='data/northwestRegion/TheRegisterGuard/') # use lapply to read all PDFs in directory
+TheRegisterGuard <- tibble(text=TheRegisterGuard[1:10]) # create a tibble with the text from each article as a row
+
+TheRegisterGuard$text <- as.character(TheRegisterGuard$text) # convert text to character
+
+TheRegisterGuardWordCt <- TheRegisterGuard %>% unnest_tokens(word,text) %>% # make a row for each word
+                                               anti_join(stop_words) %>% # remove stop words
+                                               count(word,sort=TRUE) # count words from text
+
+# The Wyoming Tribune Eagle
+TheWyomingTribuneEagle <- lapply(list.files('data/northwestRegion/TheWyomingTribuneEagle/'),readInPdf,path='data/northwestRegion/TheWyomingTribuneEagle/') # use lapply to read all PDFs in directory
+TheWyomingTribuneEagle <- tibble(text=TheWyomingTribuneEagle[1:10]) # create a tibble with the text from each article as a row
+
+TheWyomingTribuneEagle$text <- as.character(TheWyomingTribuneEagle$text) # convert text to character
+
+TheWyomingTribuneEagleWordCt <- TheWyomingTribuneEagle %>% unnest_tokens(word,text) %>% # make a row for each word
+                                                           anti_join(stop_words) %>% # remove stop words
+                                                           count(word,sort=TRUE) # count words from text
+```
+
+## Publication Sentiment {.tabset}
+
+Below is a graph for the sentiment range for each publication with lower values representing more negative words and higher values representing more positive words.
+
+### Eurasia Review
+
+```{r NorthwestSentimentCompare1,fig.width=10,fig.height=6}
+# Eurasia Review
+EurasiaReviewSentimentAFINN <- EurasiaReviewWordCt %>% inner_join(get_sentiments('afinn')) # use afinn sentiment WordCt
+EurasiaReviewSentimentNRC <- EurasiaReviewWordCt %>% inner_join(get_sentiments('nrc')) # use ncc sentiment WordCt
+EurasiaReviewSentimentBING <- EurasiaReviewWordCt %>% inner_join(get_sentiments('bing')) # use bing sentiment WordCt
+
+# make ggplot to plot counts of afinn positivity values
+ggplot(data = EurasiaReviewSentimentAFINN,
+       aes(x=value)) +
+       geom_histogram()+
+       ggtitle('Eurasia Review Sentiment Range') +
+       theme_minimal()
+```
+
+### The Spokesman Review
+
+```{r NorthwestSentimentCompare2,fig.width=10,fig.height=6}
+# The Spokesman Review
+TheSpokesmanReviewSentimentAFINN <- TheSpokesmanReviewWordCt %>% inner_join(get_sentiments('afinn')) # use afinn sentiment WordCt
+TheSpokesmanReviewSentimentNRC <- TheSpokesmanReviewWordCt %>% inner_join(get_sentiments('nrc')) # use ncc sentiment WordCt
+TheSpokesmanReviewSentimentBING <- TheSpokesmanReviewWordCt %>% inner_join(get_sentiments('bing')) # use bing sentiment WordCt
+
+# make ggplot to plot counts of afinn positivity values
+ggplot(data = TheSpokesmanReviewSentimentAFINN,
+       aes(x=value)) +
+       geom_histogram()+
+       ggtitle('The Spokesman Review Sentiment Range') +
+       theme_minimal()
+```
+
+### The Columbian
+
+```{r NorthwestSentimentCompare3,fig.width=10,fig.height=6}
+# The Columbian
+TheColumbianSentimentAFINN <- TheColumbianWordCt %>% inner_join(get_sentiments('afinn')) # use afinn sentiment WordCt
+TheColumbianSentimentNRC <- TheColumbianWordCt %>% inner_join(get_sentiments('nrc')) # use ncc sentiment WordCt
+TheColumbianSentimentBING <- TheColumbianWordCt %>% inner_join(get_sentiments('bing')) # use bing sentiment WordCt
+
+# make ggplot to plot counts of afinn positivity values
+ggplot(data = TheColumbianSentimentAFINN,
+       aes(x=value)) +
+       geom_histogram()+
+       ggtitle('The Columbian Sentiment Range') +
+       theme_minimal()
+```
+
+### The Register Guard
+
+```{r NorthwestSentimentCompare4,fig.width=10,fig.height=6}
+# The Register Guard
+TheRegisterGuardSentimentAFINN <- TheRegisterGuardWordCt %>% inner_join(get_sentiments('afinn')) # use afinn sentiment WordCt
+TheRegisterGuardSentimentNRC <- TheRegisterGuardWordCt %>% inner_join(get_sentiments('nrc')) # use ncc sentiment WordCt
+TheRegisterGuardSentimentBING <- TheRegisterGuardWordCt %>% inner_join(get_sentiments('bing')) # use bing sentiment WordCt
+
+# make ggplot to plot counts of afinn positivity values
+ggplot(data = TheRegisterGuardSentimentAFINN,
+       aes(x=value)) +
+       geom_histogram()+
+       ggtitle('The Register Guard Sentiment Range') +
+       theme_minimal()
+```
+
+### The Wyoming Tribune Eagle
+
+```{r NorthwestSentimentCompare5,fig.width=10,fig.height=6}
+# The Wyoming Tribune Eagle
+TheWyomingTribuneEagleSentimentAFINN <- TheWyomingTribuneEagleWordCt %>% inner_join(get_sentiments('afinn')) # use afinn sentiment WordCt
+TheWyomingTribuneEagleSentimentNRC <- TheWyomingTribuneEagleWordCt %>% inner_join(get_sentiments('nrc')) # use ncc sentiment WordCt
+TheWyomingTribuneEagleSentimentBING <- TheWyomingTribuneEagleWordCt %>% inner_join(get_sentiments('bing')) # use bing sentiment WordCt
+
+# make ggplot to plot counts of afinn positivity values
+ggplot(data = TheWyomingTribuneEagleSentimentAFINN,
+       aes(x=value)) +
+       geom_histogram()+
+       ggtitle('The Wyoming Tribune Eagle Sentiment Range') +
+       theme_minimal()
+```
+
+## Term Frequency and Inverse Document Frequency {.tabset}
+
+Below is a table containing the values for term frequency (tf), inverse document frequency (idf) and a combination of the two (tf_idf) for each word in each of the articles for each publication.
+
+### Eurasia Review
+
+```{r NorthwestTfIdfAnalysis1}
+# Eurasia Review
+EurasiaReviewArticleNames <- tibble(articleTitle=list.files('data/northwestRegion/EurasiaReview')) # get article titles
+EurasiaReviewArticles <- bind_cols(EurasiaReviewArticleNames,EurasiaReview) # bind the article title dataframe to the text dataframe
+
+EurasiaReviewWordCount <- EurasiaReviewArticles %>% unnest_tokens(word,text) %>% # get word count with stop words
+                                                    count(articleTitle,word,sort=TRUE)
+
+EurasiaReviewTotalWords <- EurasiaReviewWordCount %>% group_by(articleTitle) %>% # get total words for each article
+                                                      summarize(total=sum(n))
+
+EurasiaReviewWords <- left_join(EurasiaReviewWordCount,EurasiaReviewTotalWords) # join the word count dataframe to the total words dataframe
+
+EurasiaReviewWords <- EurasiaReviewWords %>% bind_tf_idf(word,articleTitle,n) # add the tf, idf and tf_idf values
+
+EurasiaReviewWords$articleTitle <- substr(EurasiaReviewWords$articleTitle,1,nchar(EurasiaReviewWords$articleTitle)-4) # remove '.pdf' at end of article title
+
+datatable(EurasiaReviewWords) # display table containing tf, idf and tf_idf values
+```
+
+### The Spokesman Review
+
+```{r NorthwestTfIdfAnalysis2}
+# The Spokesman Review
+TheSpokesmanReviewArticleNames <- tibble(articleTitle=list.files('data/northwestRegion/TheSpokesmanReview')) # get article titles
+TheSpokesmanReviewArticles <- bind_cols(TheSpokesmanReviewArticleNames,TheSpokesmanReview) # bind the article title dataframe to the text dataframe
+
+TheSpokesmanReviewWordCount <- TheSpokesmanReviewArticles %>% unnest_tokens(word,text) %>% # get word count with stop words
+                                                              count(articleTitle,word,sort=TRUE)
+
+TheSpokesmanReviewTotalWords <- EurasiaReviewWordCount %>% group_by(articleTitle) %>% # get total words for each article
+                                                           summarize(total=sum(n))
+
+TheSpokesmanReviewWords <- left_join(TheSpokesmanReviewWordCount,TheSpokesmanReviewTotalWords) # join the word count dataframe to the total words dataframe
+
+TheSpokesmanReviewWords <- TheSpokesmanReviewWords %>% bind_tf_idf(word,articleTitle,n) # add the tf, idf and tf_idf values
+
+TheSpokesmanReviewWords$articleTitle <- substr(TheSpokesmanReviewWords$articleTitle,1,nchar(TheSpokesmanReviewWords$articleTitle)-4) # remove '.pdf' at end of article title
+
+datatable(TheSpokesmanReviewWords) # display table containing tf, idf and tf_idf values
+```
+
+### The Columbian
+
+```{r NorthwestTfIdfAnalysis3}
+# The Columbian
+TheColumbianArticleNames <- tibble(articleTitle=list.files('data/northwestRegion/TheColumbian')) # get article titles
+TheColumbianArticles <- bind_cols(TheColumbianArticleNames,TheColumbian) # bind the article title dataframe to the text dataframe
+
+TheColumbianWordCount <- TheColumbianArticles %>% unnest_tokens(word,text) %>% # get word count with stop words
+                                                  count(articleTitle,word,sort=TRUE)
+
+TheColumbianTotalWords <- TheColumbianWordCount %>% group_by(articleTitle) %>% # get total words for each article
+                                                    summarize(total=sum(n))
+
+TheColumbianWords <- left_join(TheColumbianWordCount,TheColumbianTotalWords) # join the word count dataframe to the total words dataframe
+
+TheColumbianWords <- TheColumbianWords %>% bind_tf_idf(word,articleTitle,n) # add the tf, idf and tf_idf values
+
+TheColumbianWords$articleTitle <- substr(TheColumbianWords$articleTitle,1,nchar(TheColumbianWords$articleTitle)-4) # remove '.pdf' at end of article title
+
+datatable(TheColumbianWords) # display table containing tf, idf and tf_idf values
+```
+
+### The Register Guard
+
+```{r NorthwestTfIdfAnalysis4}
+# The Register Guard
+TheRegisterGuardArticleNames <- tibble(articleTitle=list.files('data/northwestRegion/TheRegisterGuard')) # get article titles
+TheRegisterGuardArticles <- bind_cols(TheRegisterGuardArticleNames,TheRegisterGuard) # bind the article title dataframe to the text dataframe
+
+TheRegisterGuardWordCount <- TheRegisterGuardArticles %>% unnest_tokens(word,text) %>% # get word count with stop words
+                                                          count(articleTitle,word,sort=TRUE)
+
+TheRegisterGuardTotalWords <- TheRegisterGuardWordCount %>% group_by(articleTitle) %>% # get total words for each article
+                                                            summarize(total=sum(n))
+
+TheRegisterGuardWords <- left_join(TheRegisterGuardWordCount,TheRegisterGuardTotalWords) # join the word count dataframe to the total words dataframe
+
+TheRegisterGuardWords <- TheRegisterGuardWords %>% bind_tf_idf(word,articleTitle,n) # add the tf, idf and tf_idf values
+
+TheRegisterGuardWords$articleTitle <- substr(TheRegisterGuardWords$articleTitle,1,nchar(TheRegisterGuardWords$articleTitle)-4) # remove '.pdf' at end of article title
+
+datatable(TheRegisterGuardWords) # display table containing tf, idf and tf_idf values
+```
+
+### The Wyoming Tribune Eagle
+
+```{r NorthwestTfIdfAnalysis5}
+# The Wyoming Tribune Eagle
+TheWyomingTribuneEagleArticleNames <- tibble(articleTitle=list.files('data/northwestRegion/TheWyomingTribuneEagle')) # get article titles
+TheWyomingTribuneEagleArticles <- bind_cols(TheWyomingTribuneEagleArticleNames,TheWyomingTribuneEagle) # bind the article title dataframe to the text dataframe
+
+TheWyomingTribuneEagleWordCount <- TheWyomingTribuneEagleArticles %>% unnest_tokens(word,text) %>% # get word count with stop words
+                                                                      count(articleTitle,word,sort=TRUE)
+
+TheWyomingTribuneEagleTotalWords <- TheWyomingTribuneEagleWordCount %>% group_by(articleTitle) %>% # get total words for each article
+                                                                        summarize(total=sum(n))
+
+TheWyomingTribuneEagleWords <- left_join(TheWyomingTribuneEagleWordCount,TheWyomingTribuneEagleTotalWords) # join the word count dataframe to the total words dataframe
+
+TheWyomingTribuneEagleWords <- TheWyomingTribuneEagleWords %>% bind_tf_idf(word,articleTitle,n) # add the tf, idf and tf_idf values
+
+TheWyomingTribuneEagleWords$articleTitle <- substr(TheWyomingTribuneEagleWords$articleTitle,1,nchar(TheWyomingTribuneEagleWords$articleTitle)-4) # remove '.pdf' at end of article title
+
+datatable(TheWyomingTribuneEagleWords) # display table containing tf, idf and tf_idf values
+```
+
+# Midwest
+
+```{r MidwestDataRead}
+# Chicago Daily Herald
+ChicagoDailyHerald <- lapply(list.files('data/midwestRegion/ChicagoDailyHerald/'),readInPdf,path='data/midwestRegion/ChicagoDailyHerald/') # use lapply to read all PDFs in directory
+ChicagoDailyHerald <- tibble(text=ChicagoDailyHerald[1:10]) # create a tibble with the text from each article as a row
+
+ChicagoDailyHerald$text <- as.character(ChicagoDailyHerald$text) # convert text to character
+
+ChicagoDailyHeraldWordCt <- ChicagoDailyHerald %>% unnest_tokens(word,text) %>% # make a row for each word
+                                                   anti_join(stop_words) %>% # remove stop words
+                                                   count(word,sort=TRUE) # count words from text
+
+# St Louis Dispatch
+StLouisPostDispatch <- lapply(list.files('data/midwestRegion/StLouisPostDispatch/'),readInPdf,path='data/midwestRegion/StLouisPostDispatch/') # use lapply to read all PDFs in directory
+StLouisPostDispatch <- tibble(text=StLouisPostDispatch[1:10]) # create a tibble with the text from each article as a row
+
+StLouisPostDispatch$text <- as.character(StLouisPostDispatch$text) # convert text to character
+
+StLouisPostDispatchWordCt <- StLouisPostDispatch %>% unnest_tokens(word,text) %>% # make a row for each word
+                                             anti_join(stop_words) %>% # remove stop words
+                                             count(word,sort=TRUE) # count words from text
+
+# The Bismarck Tribune
+TheBismarckTribune <- lapply(list.files('data/midwestRegion/TheBismarckTribune/'),readInPdf,path='data/midwestRegion/TheBismarckTribune/') # use lapply to read all PDFs in directory
+TheBismarckTribune <- tibble(text=TheBismarckTribune[1:10]) # create a tibble with the text from each article as a row
+
+TheBismarckTribune$text <- as.character(TheBismarckTribune$text) # convert text to character
+
+TheBismarckTribuneWordCt <- TheBismarckTribune %>% unnest_tokens(word,text) %>% # make a row for each word
+                                                   anti_join(stop_words) %>% # remove stop words
+                                                   count(word,sort=TRUE) # count words from text
+
+# Telegraph Herald
+TelegraphHerald <- lapply(list.files('data/midwestRegion/TelegraphHerald/'),readInPdf,path='data/midwestRegion/TelegraphHerald/') # use lapply to read all PDFs in directory
+TelegraphHerald <- tibble(text=TelegraphHerald[1:10]) # create a tibble with the text from each article as a row
+
+TelegraphHerald$text <- as.character(TelegraphHerald$text) # convert text to character
+
+TelegraphHeraldWordCt <- TelegraphHerald %>% unnest_tokens(word,text) %>% # make a row for each word
+                                             anti_join(stop_words) %>% # remove stop words
+                                             count(word,sort=TRUE) # count words from text
+
+# Star Tribune
+StarTribune <- lapply(list.files('data/midwestRegion/StarTribune/'),readInPdf,path='data/midwestRegion/StarTribune/') # use lapply to read all PDFs in directory
+StarTribune <- tibble(text=StarTribune[1:10]) # create a tibble with the text from each article as a row
+
+StarTribune$text <- as.character(StarTribune$text) # convert text to character
+
+StarTribuneWordCt <- StarTribune %>% unnest_tokens(word,text) %>% # make a row for each word
+                                             anti_join(stop_words) %>% # remove stop words
+                                             count(word,sort=TRUE) # count words from text
+```
+
+## Publication Sentiment {.tabset}
+
+Below is a graph for the sentiment range for each publication with lower values representing more negative words and higher values representing more positive words.
+
+### Chicago Daily Herald
+
+```{r MidwestSentimentCompare1,fig.width=10,fig.height=6}
+# Chicago Daily Herald
+ChicagoDailyHeraldAFINN <- ChicagoDailyHeraldWordCt %>% inner_join(get_sentiments('afinn')) # use afinn sentiment WordCt
+ChicagoDailyHeraldNRC <- ChicagoDailyHeraldWordCt %>% inner_join(get_sentiments('nrc')) # use ncc sentiment WordCt
+ChicagoDailyHeraldBING <- ChicagoDailyHeraldWordCt %>% inner_join(get_sentiments('bing')) # use bing sentiment WordCt
+
+# make ggplot to plot counts of afinn positivity values
+ggplot(data = ChicagoDailyHeraldAFINN,
+       aes(x=value)) +
+       geom_histogram()+
+       ggtitle('Chicago Daily Herald Sentiment Range') +
+       theme_minimal()
+```
+
+### St Louis Dispatch
+
+```{r MidwestSentimentCompare2,fig.width=10,fig.height=6}
+# St Louis Dispatch
+StLouisPostDispatchAFINN <- StLouisPostDispatchWordCt %>% inner_join(get_sentiments('afinn')) # use afinn sentiment WordCt
+StLouisPostDispatchNRC <- StLouisPostDispatchWordCt %>% inner_join(get_sentiments('nrc')) # use ncc sentiment WordCt
+StLouisPostDispatchBING <- StLouisPostDispatchWordCt %>% inner_join(get_sentiments('bing')) # use bing sentiment WordCt
+
+# make ggplot to plot counts of afinn positivity values
+ggplot(data = StLouisPostDispatchAFINN,
+       aes(x=value)) +
+       geom_histogram()+
+       ggtitle('St Louis Post Dispatch Sentiment Range') +
+       theme_minimal()
+```
+
+### The Bismarck Tribune
+
+```{r MidwestSentimentCompare3,fig.width=10,fig.height=6}
+# The Bismarck Tribune
+BismarckTribuneAFINN <- TheBismarckTribuneWordCt %>% inner_join(get_sentiments('afinn')) # use afinn sentiment WordCt
+BismarckTribuneNRC <- TheBismarckTribuneWordCt %>% inner_join(get_sentiments('nrc')) # use ncc sentiment WordCt
+BismarckTribuneBING <- TheBismarckTribuneWordCt %>% inner_join(get_sentiments('bing')) # use bing sentiment WordCt
+
+# make ggplot to plot counts of afinn positivity values
+ggplot(data = BismarckTribuneAFINN,
+       aes(x=value)) +
+       geom_histogram()+
+       ggtitle('Bismarck Tribune Sentiment Range') +
+       theme_minimal()
+```
+
+### Telegraph Herald
+
+```{r MidwestSentimentCompare4,fig.width=10,fig.height=6}
+# Teleraph Herald
+TelegraphHeraldAFINN <- TelegraphHeraldWordCt %>% inner_join(get_sentiments('afinn')) # use afinn sentiment WordCt
+TelegraphHeraldNRC <- TelegraphHeraldWordCt %>% inner_join(get_sentiments('nrc')) # use ncc sentiment WordCt
+TelegraphHeraldBING <- TelegraphHeraldWordCt %>% inner_join(get_sentiments('bing')) # use bing sentiment WordCt
+
+# make ggplot to plot counts of afinn positivity values
+ggplot(data = TelegraphHeraldAFINN,
+       aes(x=value)) +
+       geom_histogram()+
+       ggtitle('Telegraph Herald Sentiment Range') +
+       theme_minimal()
+```
+
+### Star Tribune
+
+```{r MidwestSentimentCompare5,fig.width=10,fig.height=6}
+# Star Tribune
+StarTribuneAFINN <- StarTribuneWordCt %>% inner_join(get_sentiments('afinn')) # use afinn sentiment WordCt
+StarTribuneNRC <- StarTribuneWordCt %>% inner_join(get_sentiments('nrc')) # use ncc sentiment WordCt
+StarTribuneBING <- StarTribuneWordCt %>% inner_join(get_sentiments('bing')) # use bing sentiment WordCt
+
+# make ggplot to plot counts of afinn positivity values
+ggplot(data = StarTribuneAFINN,
+       aes(x=value)) +
+       geom_histogram()+
+       ggtitle('Star Tribune Sentiment Range') +
+       theme_minimal()
+```
+
+## Term Frequency and Inverse Document Frequency {.tabset}
+
+Below is a table containing the values for term frequency (tf), inverse document frequency (idf) and a combination of the two (tf_idf) for each word in each of the articles for each publication.
+
+### Chicago Daily Herald
+
+```{r MidwestTfIdfAnalysis1}
+# Chicago Daily Herald
+ChicagoDailyHeraldArticleNames <- tibble(articleTitle=list.files('data/midwestRegion/ChicagoDailyHerald')) # get article titles
+ChicagoDailyHeraldArticles <- bind_cols(ChicagoDailyHeraldArticleNames,ChicagoDailyHerald) # bind the article title dataframe to the text dataframe
+
+ChicagoDailyHeraldWordCount <- ChicagoDailyHeraldArticles %>% unnest_tokens(word,text) %>% # get word count with stop words
+                                                              count(articleTitle,word,sort=TRUE)
+
+ChicagoDailyHeraldTotalWords <- ChicagoDailyHeraldWordCount %>% group_by(articleTitle) %>% # get total words for each article
+                                                                summarize(total=sum(n))
+
+ChicagoDailyHeraldWords <- left_join(ChicagoDailyHeraldWordCount,ChicagoDailyHeraldTotalWords) # join the word count dataframe to the total words dataframe
+
+ChicagoDailyHeraldWords <- ChicagoDailyHeraldWords %>% bind_tf_idf(word,articleTitle,n) # add the tf, idf and tf_idf values
+
+ChicagoDailyHeraldWords$articleTitle <- substr(ChicagoDailyHeraldWords$articleTitle,1,nchar(ChicagoDailyHeraldWords$articleTitle)-4) # remove '.pdf' at end of article title
+
+datatable(ChicagoDailyHeraldWords) # display table containing tf, idf and tf_idf values
+```
+
+### Star Tribune
+
+```{r MidwestTfIdfAnalysis2}
+# Star Tribune
+StarTribuneArticleNames <- tibble(articleTitle=list.files('data/midwestRegion/StarTribune')) # get article titles
+StarTribuneArticles <- bind_cols(StarTribuneArticleNames,StarTribune) # bind the article title dataframe to the text dataframe
+
+StarTribuneWordCount <- StarTribuneArticles %>% unnest_tokens(word,text) %>% # get word count with stop words
+                                                count(articleTitle,word,sort=TRUE)
+
+StarTribuneTotalWords <- StarTribuneWordCount %>% group_by(articleTitle) %>% # get total words for each article
+                                                  summarize(total=sum(n))
+
+StarTribuneWords <- left_join(StarTribuneWordCount,StarTribuneTotalWords) # join the word count dataframe to the total words dataframe
+
+StarTribuneWords <- StarTribuneWords %>% bind_tf_idf(word,articleTitle,n) # add the tf, idf and tf_idf values
+
+StarTribuneWords$articleTitle <- substr(StarTribuneWords$articleTitle,1,nchar(StarTribuneWords$articleTitle)-4) # remove '.pdf' at end of article title
+
+datatable(StarTribuneWords) # display table containing tf, idf and tf_idf values
+```
+
+### St Louis Post Dispatch
+
+```{r MidwestTfIdfAnalysis3}
+# St Louis Post Dispatch
+StLouisPostDispatchArticleNames <- tibble(articleTitle=list.files('data/midwestRegion/StLouisPostDispatch')) # get article titles
+StLouisPostDispatchArticles <- bind_cols(StLouisPostDispatchArticleNames,StLouisPostDispatch) # bind the article title dataframe to the text dataframe
+
+StLouisPostDispatchWordCount <- StLouisPostDispatchArticles %>% unnest_tokens(word,text) %>% # get word count with stop words
+                                                                count(articleTitle,word,sort=TRUE)
+
+StLouisPostDispatchTotalWords <- StLouisPostDispatchWordCount %>% group_by(articleTitle) %>% # get total words for each article
+                                                                  summarize(total=sum(n))
+
+StLouisPostDispatchWords <- left_join(StLouisPostDispatchWordCount,StLouisPostDispatchTotalWords) # join the word count dataframe to the total words dataframe
+
+StLouisPostDispatchWords <- StLouisPostDispatchWords %>% bind_tf_idf(word,articleTitle,n) # add the tf, idf and tf_idf values
+
+StLouisPostDispatchWords$articleTitle <- substr(StLouisPostDispatchWords$articleTitle,1,nchar(StLouisPostDispatchWords$articleTitle)-4) # remove '.pdf' at end of article title
+
+datatable(StLouisPostDispatchWords) # display table containing tf, idf and tf_idf values
+```
+
+### Telegraph Herald
+
+```{r MidwestTfIdfAnalysis4}
+# Telegraph Herald
+TelegraphHeraldArticleNames <- tibble(articleTitle=list.files('data/midwestRegion/TelegraphHerald')) # get article titles
+TelegraphHeraldArticles <- bind_cols(TelegraphHeraldArticleNames,TelegraphHerald) # bind the article title dataframe to the text dataframe
+
+TelegraphHeraldWordCount <- TelegraphHeraldArticles %>% unnest_tokens(word,text) %>% # get word count with stop words
+                                                        count(articleTitle,word,sort=TRUE)
+
+TelegraphHeraldTotalWords <- TelegraphHeraldWordCount %>% group_by(articleTitle) %>% # get total words for each article
+                                                          summarize(total=sum(n))
+
+TelegraphHeraldWords <- left_join(TelegraphHeraldWordCount,TelegraphHeraldTotalWords) # join the word count dataframe to the total words dataframe
+
+TelegraphHeraldWords <- TelegraphHeraldWords %>% bind_tf_idf(word,articleTitle,n) # add the tf, idf and tf_idf values
+
+TelegraphHeraldWords$articleTitle <- substr(TelegraphHeraldWords$articleTitle,1,nchar(TelegraphHeraldWords$articleTitle)-4) # remove '.pdf' at end of article title
+
+datatable(TelegraphHeraldWords) # display table containing tf, idf and tf_idf values
+```
+
+### The Bismarck Tribune
+
+```{r MidwestTfIdfAnalysis5}
+# The Bismarck Tribune
+TheBismarckTribuneArticleNames <- tibble(articleTitle=list.files('data/midwestRegion/TheBismarckTribune')) # get article titles
+TheBismarckTribuneArticles <- bind_cols(TheBismarckTribuneArticleNames,TheBismarckTribune) # bind the article title dataframe to the text dataframe
+
+TheBismarckTribuneWordCount <- TheBismarckTribuneArticles %>% unnest_tokens(word,text) %>% # get word count with stop words
+                                                              count(articleTitle,word,sort=TRUE)
+
+TheBismarckTribuneTotalWords <- TheBismarckTribuneWordCount %>% group_by(articleTitle) %>% # get total words for each article
+                                                                summarize(total=sum(n))
+
+TheBismarckTribuneWords <- left_join(TheBismarckTribuneWordCount,TheBismarckTribuneTotalWords) # join the word count dataframe to the total words dataframe
+
+TheBismarckTribuneWords <- TheBismarckTribuneWords %>% bind_tf_idf(word,articleTitle,n) # add the tf, idf and tf_idf values
+
+TheBismarckTribuneWords$articleTitle <- substr(TheBismarckTribuneWords$articleTitle,1,nchar(TheBismarckTribuneWords$articleTitle)-4) # remove '.pdf' at end of article title
+
+datatable(TheBismarckTribuneWords) # display table containing tf, idf and tf_idf values
+```
+
+# Analysis of Northeast and Midwest Regions (Adam)
+
+For all 100 articles used for the Northwest and Midwest regions, I combined each article from the five publications from each region into a corpus. To do this, I created a function that would read a pdf file between the words 'Body' and 'Classification' as this is the format each article was downloaded in from the Nexas Uni website. I used `lapply` to apply this function to each file in the directory for each publication, creating a table for each publication where each row is the text of every article. I then ran sentiment analysis on these and displayed the AFINN word positivity values for each news publication. To calculate the term frequency and inverse document frequency, I used the table I described above with the text for each publication, calculated the word count for every word in each article, calculated the total words in each article and added the term frequency and inverse document frequency by using the `bind_tf_idf` function. According to the analysis done here, I have found that the sentiment for most of the publications was relatively neutral, with words being classified mostly evenly between positive and negative values. Additionally, some of the most commonly occurring words in each article and 'climate' and 'change'. Both of these things are likely due to the method of finding the articles and could be made less of an issue with a more sophisticated article search procedure. As next steps, I would recommend a more in-detail search for articles, being sure to control for frequently-occurring words and cover as wide a sentiment range as possible. This could lead to being able to conduct a more meaningful analysis of climate change sentiment throughout the country.
+
+```{r, include=FALSE}
+#Reading in text data for South and West regions and subsetting to only include the body of the article 
+#setwd("~/DS 3001/DS3001textMiningLab")
+S1 <- read_lines("data/SouthRegion/South1.txt")
+S1 <- tibble(S1)
+S1 = S1[29:53,]
+S1$S1 = as.character(S1$S1)
+
+S2 <- read_lines("data/SouthRegion/South2.txt")
+S2 <- tibble(S2)
+S2 = S2[29:51,]
+S2$S2 = as.character(S2$S2)
+
+S3 <- read_lines("data/SouthRegion/South3.txt")
+S3 <- tibble(S3)
+S3 = S3[29:36,]
+S3$S3 = as.character(S3$S3)
+
+S4 <- read_lines("data/SouthRegion/South4.txt")
+S4 <- tibble(S4)
+S4 = S4[29:41,]
+S4$S4 = as.character(S4$S4)
+
+S5 <- read_lines("data/SouthRegion/South5.txt")
+S5 <- tibble(S5)
+S5 = S5[29:46,]
+S5$S5 = as.character(S5$S5)
+
+S6 <- read_lines("data/SouthRegion/South6.txt")
+S6 <- tibble(S6)
+S6 = S6[29:40,]
+S6$S6 = as.character(S6$S6)
+
+S7 <- read_lines("data/SouthRegion/South7.txt")
+S7 <- tibble(S7)
+S7 = S7[29:32,]
+S7$S7 = as.character(S7$S7)
+
+S8 <- read_lines("data/SouthRegion/South8.txt")
+S8 <- tibble(S8)
+S8 = S8[29:35,]
+S8$S8 = as.character(S8$S8)
+
+S9 <- read_lines("data/SouthRegion/South9.txt")
+S9 <- tibble(S9)
+S9 = S9[29:65,]
+S9$S9 = as.character(S9$S9)
+
+S10 <- read_lines("data/SouthRegion/South10.txt")
+S10 <- tibble(S10)
+S10 = S10[29:47,]
+S10$S10 = as.character(S10$S10)
+
+W1 <- read_lines("data/WestRegion/West1.txt")
+W1 <- tibble(W1)
+W1 = W1[30:43,]
+
+W2 <- read_lines("data/WestRegion/West2.txt")
+W2 <- tibble(W2)
+W2 = W2[30:71,]
+
+W3 <- read_lines("data/WestRegion/West3.txt")
+W3 <- tibble(W3)
+W3 = W3[30:54,]
+
+W4 <- read_lines("data/WestRegion/West4.txt")
+W4 <- tibble(W4)
+W4 = W4[30:44,]
+
+W5 <- read_lines("data/WestRegion/West5.txt")
+W5 <- tibble(W5)
+W5 = W5[30:70,]
+
+W6 <- read_lines("data/WestRegion/West6.txt")
+W6 <- tibble(W6)
+W6 = W6[30:63,]
+
+W7 <- read_lines("data/WestRegion/West7.txt")
+W7 <- tibble(W7)
+W7 = W7[30:42,]
+
+W8 <- read_lines("data/WestRegion/West8.txt")
+W8 <- tibble(W8)
+W8 = W8[31:52,]
+
+W9 <- read_lines("data/WestRegion/West9.txt")
+W9 <- tibble(W9)
+W9 = W9[30:50,]
+
+W10 <- read_lines("data/WestRegion/West10.txt")
+W10 <- tibble(W10)
+W10 = W10[30:41,]
+
+#Combining dataframes into region specific lists
+South = list(S1,S2,S3,S4,S5,S6,S7,S8,S9,S10)
+West = list(W1,W2,W3,W4,W5,W6,W7,W8,W9,W10)
+
+#Making a function to tokenize the documents and identify the word frequency
+token = function(x){
+  y = names(x)
+  x = unnest_tokens(x, word, y)
+  x = tibble(x[2]) 
+  x = x %>%
+  anti_join(stop_words)%>%
+  count(word, sort=TRUE)
+  name = paste("Token",y,sep = '')
+  assign(name, data.frame(x))
+}
+
+#Making a function to add the afinn sentiment analysis to the word frequency
+afinn = function(x){
+  x = x %>%
+  inner_join(get_sentiments("afinn"))
+  assign("afinn", x)
+}
+
+#Making a function to visualize the word frequency in a word cloud
+visualize = function(x){
+  set.seed(3001)
+  name = paste("WC", names(x), sep = "")
+  assign(name,  ggplot(x[1:50,], aes(label = word, size = n)
+       ) +
+  geom_text_wordcloud_area(area_corr_power = 1) +
+  scale_size_area(max_size = 16)+
+  theme_minimal())
+}
+
+#Making a function that maps the wordcloud to a colored sentiment gradient
+viz_afinn = function(x){
+  set.seed(3001)
+  name = paste("WC", names(x), sep = "")
+  names(x)[2] = "n" 
+  assign(name,  ggplot(x[1:50,], aes(label = word, size = n, color = value)
+       ) +
+  geom_text_wordcloud_area(area_corr_power = 1) +
+  scale_size_area(max_size = 16)+
+  scale_color_gradient(low = "red", high = "green")+
+  theme_minimal())
+}
+
+#Making a function for afinn histograms
+histo_afinn = function(x) {
+  ggplot(data = x,
+       aes(x=value)) +
+       geom_histogram()+
+       ggtitle('Histogram of Afinn values') +
+       theme_minimal()
+}
+
+#Tokenizing South and West region articles
+S_Tokens = lapply(South, token)
+W_Tokens = lapply(West, token)
+
+#Using functions I made earlier on the South data
+South_afinn = lapply(S_Tokens, afinn)
+S_WordCloud = lapply(S_Tokens, visualize)
+S_ColorWord = lapply(South_afinn, viz_afinn)
+
+#Same for West Data
+West_afinn = lapply(W_Tokens, afinn)
+W_WordCloud = lapply(W_Tokens, visualize)
+W_ColorWord = lapply(West_afinn, viz_afinn)
+
+#Uniting all of the text into one cell
+data_prep <- function(x){
+  i <- as_tibble(t(x))
+  ii <- unite(i,"text",remove = TRUE,sep = "")
+}
+
+S_United = lapply(South, data_prep) 
+W_United = lapply(West, data_prep)
+
+#Binding the dataframes within our lists together
+S_United = bind_rows(S_United)
+S_FullToken = S_United %>% unnest_tokens(word, text) %>%
+  anti_join(stop_words)%>%
+  count(word, sort = TRUE)
+
+S_FullCloud = visualize(S_FullToken)
+S_FullAfinn = afinn(S_FullToken)
+S_FullAfinnC = viz_afinn(S_FullAfinn)
+
+W_United = bind_rows(W_United)
+W_FullToken = W_United %>% unnest_tokens(word, text) %>%
+  anti_join(stop_words)%>%
+  count(word, sort = TRUE)
+
+W_FullCloud = visualize(W_FullToken)
+W_FullAfinn = afinn(W_FullToken)
+W_FullAfinnC = viz_afinn(W_FullAfinn)
+
+# make ggplot to plot counts of afinn positivity values
+S_hist_afinn = lapply(South_afinn, histo_afinn)
+W_hist_afinn = lapply(West_afinn, histo_afinn)
+  
+  
+#Term frequency analysis
+
+#Matching the name of the article with its text in the corpus
+South_Names = data.frame(name = c("S1","S2","S3","S4","S5","S6","S7","S8","S9","S10"))
+S_tf = cbind.data.frame(South_Names, S_United)
+
+West_Names = data.frame(name = c("W1","W2","W3","W4","W5","W6","W7","W8","W9","W10"))
+W_tf = cbind.data.frame(West_Names, W_United)
+
+#Counting the number of times a word occurs per article
+S_word_count = S_tf %>%
+  unnest_tokens(word, text) %>%
+  count(name, word, sort = TRUE)
+
+W_word_count = W_tf %>%
+  unnest_tokens(word, text) %>%
+  count(name, word, sort = TRUE)
+
+#Finding the total number of words in each article
+S_total_words = S_word_count %>% 
+  group_by(name) %>% 
+  summarize(total = sum(n))
+
+S_Words = left_join(S_word_count, S_total_words)
+
+S_tf_idf = S_Words %>%
+  bind_tf_idf(word, name, n) %>%
+  arrange(desc(tf_idf))
+
+W_total_words = W_word_count %>% 
+  group_by(name) %>% 
+  summarize(total = sum(n))
+
+W_Words = left_join(W_word_count, W_total_words)
+
+W_tf_idf = W_Words %>%
+  bind_tf_idf(word, name, n) %>%
+  arrange(desc(tf_idf))
+
+
+```
+
+## South and West {.tabset}
+
+For each article, I displayed a wordcloud of the different unique terms in it, and it scales the size of the word based on the word's frequency. Below that is a wordcloud color coded for sentiment analysis (green indicates positive sentiment and red indicates negative sentiment).
+
+
+### South {.tabset}
+
+#### 1st South Article
+
+```{r}
+S_WordCloud[[1]]
+```
+
+
+```{r}
+S_hist_afinn[[1]]
+```
+
+
+```{r}
+S_ColorWord[[1]]
+```
+
+
+#### 2nd South Article
+
+
+```{r}
+S_WordCloud[[2]]
+```
+
+```{r}
+S_hist_afinn[[2]]
+```
+
+```{r}
+S_ColorWord[[2]]
+```
+
+#### 3rd South Article
+
+```{r}
+S_WordCloud[[3]]
+```
+
+```{r}
+S_hist_afinn[[3]]
+```
+
+```{r}
+S_ColorWord[[3]]
+```
+
+#### 4th South Article
+
+```{r}
+S_WordCloud[[4]]
+```
+
+
+```{r}
+S_hist_afinn[[4]]
+```
+
+
+```{r}
+S_ColorWord[[4]]
+```
+
+#### 5th South Article
+
+```{r}
+S_WordCloud[[5]]
+```
+
+
+```{r}
+S_hist_afinn[[5]]
+```
+
+
+```{r}
+S_ColorWord[[5]]
+```
+
+#### 6th South Article
+
+```{r}
+S_WordCloud[[6]]
+```
+
+
+```{r}
+S_hist_afinn[[6]]
+```
+
+
+```{r}
+S_ColorWord[[6]]
+```
+
+#### 7th South Article
+
+```{r}
+S_WordCloud[[7]]
+```
+
+
+```{r}
+S_hist_afinn[[7]]
+```
+
+
+```{r}
+S_ColorWord[[7]]
+```
+
+#### 8th South Article
+
+```{r}
+S_WordCloud[[8]]
+```
+
+
+```{r}
+S_hist_afinn[[8]]
+```
+
+
+```{r}
+S_ColorWord[[8]]
+```
+
+#### 9th South Article
+
+```{r}
+S_WordCloud[[9]]
+```
+
+
+```{r}
+S_hist_afinn[[9]]
+```
+
+
+```{r}
+S_ColorWord[[9]]
+```
+
+#### 10th South Article
+
+```{r}
+S_WordCloud[[10]]
+```
+
+
+```{r}
+S_hist_afinn[[10]]
+```
+
+
+```{r}
+S_ColorWord[[10]]
+```
+
+### South DataTable
+
+DataTable of Term Frequency (tf) in South Newspapers and their respective Inverse Document Frequencies (idf)
+
+```{r}
+DT::datatable(S_tf_idf)
+```
+
+### South Total Visuals
+
+```{r}
+S_FullCloud
+
+ggplot(data = S_FullAfinn,
+       aes(x=value)) +
+       geom_histogram()+
+       ggtitle('Histogram of Afinn values') +
+       theme_minimal()
+S_FullAfinnC
+```
+
+### West {.tabset}
+
+#### 1st West Article
+
+```{r}
+W_WordCloud[[1]]
+```
+
+
+```{r}
+W_hist_afinn[[1]]
+```
+
+
+```{r}
+W_ColorWord[[1]]
+```
+
+
+#### 2nd West Article
+
+```{r}
+W_WordCloud[[2]]
+```
+
+
+```{r}
+W_hist_afinn[[2]]
+```
+
+
+```{r}
+W_ColorWord[[2]]
+```
+
+#### 3rd West Article
+
+```{r}
+W_WordCloud[[3]]
+```
+
+
+```{r}
+W_hist_afinn[[3]]
+```
+
+
+```{r}
+W_ColorWord[[3]]
+```
+
+#### 4th West Article
+
+```{r}
+W_WordCloud[[4]]
+```
+
+
+```{r}
+W_hist_afinn[[4]]
+```
+
+
+```{r}
+W_ColorWord[[4]]
+```
+
+#### 5th West Article
+
+```{r}
+W_WordCloud[[5]]
+```
+
+
+```{r}
+W_hist_afinn[[5]]
+```
+
+
+```{r}
+W_ColorWord[[5]]
+```
+
+#### 6th West Article
+
+```{r}
+W_WordCloud[[6]]
+```
+
+
+```{r}
+W_hist_afinn[[6]]
+```
+
+
+```{r}
+W_ColorWord[[6]]
+```
+
+#### 7th West Article
+
+```{r}
+W_WordCloud[[7]]
+```
+
+
+```{r}
+W_hist_afinn[[7]]
+```
+
+
+```{r}
+W_ColorWord[[7]]
+```
+
+#### 8th West Article
+
+```{r}
+W_WordCloud[[8]]
+```
+
+
+```{r}
+W_hist_afinn[[8]]
+```
+
+
+```{r}
+W_ColorWord[[8]]
+```
+
+#### 9th West Article
+
+```{r}
+W_WordCloud[[9]]
+```
+
+
+```{r}
+W_hist_afinn[[9]]
+```
+
+
+```{r}
+W_ColorWord[[9]]
+```
+
+#### 10th West Article
+
+```{r}
+W_WordCloud[[10]]
+```
+
+
+```{r}
+W_hist_afinn[[10]]
+```
+
+
+```{r}
+W_ColorWord[[10]]
+```
+
+### West DataTable
+
+DataTable of Term Frequency (tf) in West Newspapers and their respective Inverse Document Frequencies (idf)
+
+```{r}
+DT::datatable(W_tf_idf)
+```
+
+### West Total Visuals
+
+```{r}
+W_FullCloud
+
+ggplot(data = W_FullAfinn,
+       aes(x=value)) +
+       geom_histogram()+
+       ggtitle('Histogram of Afinn values') +
+       theme_minimal()
+W_FullAfinnC
+```
+
+
+## Analysis of South and West Regions (Declan)
+
+I combined the 10 articles from the South and West regions into two respective corpora via lists and the "unite" function. I looked at the sentiment analysis for each newspaper, and also compared it to the corpus on the whole. I also used the bind_tf_idf function to create a data table that displayed the tf and idf for terms in the documents. Some articles skewed positive whilst others skewed negative across both regions. All together, the South and the West regions showed similar sentiment levels. However, this should be taken with a grain of salt because the "South" region only encompassed Florida and the "West" region only encompassed California. Both of these states deeply feel the effects of climate change through rising sea levels, intensified storms, and extreme summer temperatures. Therefore, despite their geographical differences, they may still be closely aligned when discussing climate change. It is hard to conclude much from the term frequency analysis because the single words do not mean much without context. "Climate" and "Change", the search terms used to procure the articles, occurred often in the documents. Furthermore, one of the terms with the highest tf_idf for the West region is "coffee", but that does not mean coffee necessarily connects to climate change. The most differentiating textual element is "Hurricane" appears much more often in the South region than in the West because the West does not have to worry about those storms. As for next steps, it would be beneficial to either 
+
+A: Capture more regions
+
+or
+
+B: Include more states in each region
+
+
+This will mitigate the effects of California and Florida's similarities.
+
+
+Also, I believe collecting more articles would strengthen the validity of any insights from this data because 10 articles likely does not capture the general sentiment towards climate change.
+
+# Conclusion
+
+Overall, the regions showed little difference beyond region-specific takeaways (ex: "Irvine" occurred frequently in West publications). This can likely be attributed to the fact that no matter one's stance on climate change events are occurring that are interpreted both positively and negatively. If a region supports green energy, they will laud the development of renewable energy and begrudge when fossil fuels are defended. Someone from the other perspective will view those stories in the opposite way, but because bot occur at what seems to be similar rates, the sentiment analysis for any given region will become balanced. In the future, as discussed earlier, we may want to refine our search term to a more targeted search like "wind turbine development" to see if regions perceive the growth of wind energy in different ways. As long as there are ample articles for this type of search, we believe it could yield more insightful results from the text

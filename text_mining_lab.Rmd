@@ -490,3 +490,18 @@ DataTable of Term Frequency (tf) in West Newspapers and their respective Inverse
 DT::datatable(W_tf_idf)
 ```
 
+## Analysis
+
+I combined the 10 articles from the South and West regions into two respective corpora via lists and the "unite" function. I looked at the sentiment analysis for each newspaper, and also compared it to the corpus on the whole. I also used the bind_tf_idf function to create a data table that displayed the tf and idf for terms in the documents. Some articles skewed positive whilst others skewed negative across both regions. All together, the South and the West regions showed similar sentiment levels. However, this should be taken with a grain of salt because the "South" region only encompassed Florida and the "West" region only encompassed California. Both of these states deeply feel the effects of climate change through rising sea levels, intensified storms, and extreme summer temperatures. Therefore, despite their geographical differences, they may still be closely aligned when discussing climate change. It is hard to conclude much from the term frequency analysis because the single words do not mean much without context. "Climate" and "Change", the search terms used to procure the articles, occurred often in the documents. Furthermore, one of the terms with the highest tf_idf for the West region is "coffee", but that does not mean coffee necessarily connects to climate change. The most differentiating textual element is "Hurricane" appears much more often in the South region than in the West because the West does not have to worry about those storms. As for next steps, it would be beneficial to either 
+
+A: Capture more regions
+
+or
+
+B: Include more states in each region
+
+
+This will mitigate the effects of California and Florida's similarities.
+
+
+Also, I believe collecting more articles would strengthen the validity of any insights from this data because 10 articles likely does not capture the general sentiment towards climate change.
