@@ -1,0 +1,15 @@
+base
+DT
+ggplot2
+ggwordcloud
+pdftools
+stringr
+textdata
+tidytext
+tidyverse
+tibble
+tidyr
+readr
+purrr
+dplyr
+forcats

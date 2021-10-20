@@ -564,7 +564,6 @@ For all 100 articles used for the Northwest and Midwest regions, I combined each
 
 ```{r, include=FALSE}
 #Reading in text data for South and West regions and subsetting to only include the body of the article 
-#setwd("~/DS 3001/DS3001textMiningLab")
 S1 <- read_lines("data/SouthRegion/South1.txt")
 S1 <- tibble(S1)
 S1 = S1[29:53,]
